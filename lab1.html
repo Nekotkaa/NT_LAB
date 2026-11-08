@@ -15,6 +15,278 @@
         <li><a href="index.html">Back to main page</a></li>
     </ul>
     <p class="theoretical">Content for Theoretical part</p>
+<!-- SECTION: THEORETICAL PART -->
+    <div id="theoretical" class="theoretical">
+        <h2>1. Theoretical part</h2>
+
+        <!-- 1.1 DNS SYSTEM -->
+        <div id="dns" class="dns">
+            <h3>1.1. DNS system</h3>
+            <p>The Domain Name System (DNS) operates as a globally distributed and hierarchical database responsible for translating human-readable hostnames (such as <code>studife.it.p.lodz.pl</code>) into machine-routable IP addresses, as well as handling reverse lookups. It was introduced as a modern replacement for the legacy <code>HOSTS.TXT</code> file, a centralized approach where every computer on the network had to periodically sync the entire list. That static model led to high network load, update latency, and administrative bottlenecks. To solve these limitations, DNS was architected around key operational properties:</p>
+            <ul>
+                <li><strong>Scalability:</strong> Information is distributed so that no single machine holds the complete database.</li>
+                <li><strong>Decentralized Administration:</strong> Management authority is delegated across organizational borders.</li>
+                <li><strong>Fault Tolerance:</strong> High availability is sustained through data replication, aggressive caching, and redundant server deployment.</li>
+                <li><strong>Extensibility:</strong> The framework easily accommodates new record types over time.</li>
+                <li><strong>High Performance:</strong> The vast majority of client requests are resolved directly from local or intermediate caches.</li>
+            </ul>
+            <p>Transport-wise, DNS uses UDP port 53 for standard, lightweight requests and responses. It switches to TCP port 53 when handling truncated payloads exceeding single-packet limits or performing authoritative zone transfers. Modern network privacy is enhanced over encrypted channels such as DNS over TLS (DoT), DNS over HTTPS (DoH), and DNS over QUIC (DoQ).</p>
+
+            <h4>1.1.1. List of Top-Level Domains (TLDs)</h4>
+            <p>A Top-Level Domain (TLD) represents the rightmost label in a fully specified hostname (e.g., <code>.pl</code> in <code>studife.it.p.lodz.pl</code>). Governed by IANA/ICANN, the TLD namespace encompasses over a thousand active extensions categorised into distinct groups:</p>
+            <ul>
+                <li><strong>Infrastructure:</strong> Includes <code>.arpa</code>, utilized primarily for reverse IP-to-hostname mappings (originating from ARPANET).</li>
+                <li><strong>Generic Unsponsored (gTLD):</strong> Includes open extensions such as <code>.com</code>, <code>.net</code>, <code>.org</code>, and <code>.biz</code> with minimal registration restrictions.</li>
+                <li><strong>Generic Sponsored (sTLD):</strong> Specialized extensions like <code>.edu</code>, <code>.gov</code>, and <code>.mil</code> reserved exclusively for verified entities matching criteria defined by sponsoring organizations.</li>
+                <li><strong>Country Code (ccTLD):</strong> Two-letter codes assigned to specific nations or geographical territories, such as <code>.pl</code>, <code>.uk</code>, <code>.de</code>, and <code>.us</code>.</li>
+                <li><strong>New gTLDs:</strong> Thematic or brand-focused extensions introduced after 2013, such as <code>.app</code>, <code>.shop</code>, and <code>.online</code>.</li>
+                <li><strong>Internationalized Domain Names (IDN TLDs):</strong> Extensions using non-Latin scripts (e.g., Cyrillic or Chinese). In the DNS core, they are encoded into ASCII strings using Punycode with an <code>xn--</code> prefix (for instance, the Russian <code>.рф</code> is stored as <code>xn--p1ai</code>).</li>
+            </ul>
+            <p>The official registry of all active TLDs is maintained by IANA in the Root Zone Database.</p>
+
+            <h4>1.1.2. Hierarchical structure of the Domain Name System (DNS), Top-Level Domains, DNS queries, DNS delegation</h4>
+            <p><strong>Hierarchical Structure</strong><br>
+            The DNS namespace forms an inverted tree structure evaluated from right to left:<br>
+            <code>root (.) &rarr; TLD (.pl) &rarr; lodz.pl &rarr; p.lodz.pl &rarr; it.p.lodz.pl &rarr; host studife</code></p>
+            <ul>
+                <li><strong>Root Zone (<code>.</code>):</strong> The apex of the hierarchy.</li>
+                <li><strong>Domain:</strong> A specific node in the tree along with all sub-branches beneath it.</li>
+                <li><strong>Subdomain:</strong> A sub-tree located within a broader parent domain.</li>
+                <li><strong>Zone:</strong> A distinct portion of the DNS domain tree managed by a single administrative entity.</li>
+                <li><strong>FQDN (Fully Qualified Domain Name):</strong> An absolute domain name terminated by an explicit root dot (e.g., <code>studife.it.p.lodz.pl.</code>).</li>
+            </ul>
+
+            <p><strong>DNS Query Types</strong></p>
+            <ul>
+                <li><strong>Recursive Query:</strong> The requesting client demands a final answer from the resolver. The queried server assumes full responsibility for navigating the hierarchy to return either the IP address or an error.</li>
+                <li><strong>Iterative Query:</strong> The queried server responds with the best information currently in its possession—typically a referral to another server lower down the hierarchy—leaving the client to issue subsequent queries.</li>
+            </ul>
+
+            <p><strong>Typical Resolution Workflow</strong> (e.g., client <code>somehost.gei.insa.toulouse.fr</code> requesting <code>studife.it.p.lodz.pl</code>):</p>
+            <ol>
+                <li>The local stub resolver checks the operating system's <code>hosts</code> file and local DNS cache.</li>
+                <li>If unresolved, it issues a recursive request to the configured local/recursive resolver (e.g., ISP server or <code>8.8.8.8</code>). The request ascends through the organizational chain (<code>dns.gei.insa.toulouse.fr</code>, <code>dns.insa.toulouse.fr</code>, <code>dns.toulouse.fr</code>, <code>dns.fr</code>) up to the root servers.</li>
+                <li>The recursive resolver checks its cache; if empty, it performs iterative queries following delegation referrals: Root &rarr; <code>.pl</code> authority &rarr; <code>lodz.pl</code> &rarr; <code>p.lodz.pl</code>.</li>
+                <li>The authoritative server for <code>it.p.lodz.pl</code> returns the definitive IP address. The result traverses back along the resolution path, where intermediate resolvers store it in cache according to its Time to Live (TTL).</li>
+            </ol>
+
+            <p><strong>DNS Delegation</strong><br>
+            Delegation transfers administrative authority for a specific subdomain to another set of name servers. The parent zone contains <code>NS</code> records pointing to the target sub-zone's servers, accompanied by <code>A</code>/<code>AAAA</code> glue records if the name server itself resides within the child zone.<br>
+            <em>Example snippet in parent zone:</em></p>
+            <pre style="background: #1e1e1e; padding: 10px; border-radius: 5px;"><code>p.lodz.pl. IN NS ns1.p.lodz.pl.</code></pre>
+            <p>Setting up a custom domain (e.g., <code>my_name.org</code>) requires acquiring it via a registrar and configuring zone records, which must contain at least:</p>
+            <ul>
+                <li><strong><code>A</code> record:</strong> Maps the domain to the host IP.</li>
+                <li><strong><code>MX</code> record:</strong> Directs email traffic to designated mail servers.</li>
+                <li><strong><code>NS</code> records:</strong> Identifies authoritative name servers.</li>
+            </ul>
+
+            <h4>1.1.3. DNS record, DNS and reverse DNS</h4>
+            <p>A Resource Record (RR) is an entry stored within a DNS zone file. It comprises five standardized attributes: <code>NAME</code> (owner), <code>TTL</code> (cache lifetime in seconds), <code>CLASS</code> (typically <code>IN</code> for Internet), <code>TYPE</code>, and <code>RDATA</code> (payload data).<br>
+            <em>Example:</em></p>
+            <pre style="background: #1e1e1e; padding: 10px; border-radius: 5px;"><code>studife.it.p.lodz.pl. 300 IN A 192.0.2.10</code></pre>
+
+            <p><strong>Common Record Types:</strong></p>
+            <ul>
+                <li><strong><code>A</code> / <code>AAAA</code>:</strong> Maps hostnames to IPv4 / IPv6 addresses.</li>
+                <li><strong><code>CNAME</code>:</strong> Defines an alias pointing to another canonical hostname (cannot point directly to an IP).</li>
+                <li><strong><code>MX</code>:</strong> Specifies mail exchange servers; lower numerical values indicate higher delivery priority.</li>
+                <li><strong><code>NS</code>:</strong> Indicates authoritative servers for domain delegation.</li>
+                <li><strong><code>SOA</code>:</strong> Defines zone parameters (serial number, refresh timers, admin contact).</li>
+                <li><strong><code>TXT</code>:</strong> Holds arbitrary text data, commonly used for security frameworks (SPF, DKIM) and ownership verification.</li>
+                <li><strong><code>PTR</code>:</strong> Maps IP addresses back to canonical hostnames.</li>
+                <li><strong><code>CAA</code>:</strong> Specifies which Certificate Authorities are authorized to issue SSL/TLS certificates for the domain.</li>
+            </ul>
+            <p>Records can be inspected using diagnostic commands like <code>dig it.p.lodz.pl NS +short</code>.</p>
+
+            <p><strong>Forward vs. Reverse DNS</strong></p>
+            <ul>
+                <li><strong>Forward DNS:</strong> Converts hostnames to IP addresses.</li>
+                <li><strong>Reverse DNS:</strong> Resolves IP addresses back to domain names using <code>PTR</code> records under the <code>.arpa</code> tree:
+                    <ul>
+                        <li><em>IPv4:</em> Octets are inverted under <code>in-addr.arpa</code> (e.g., <code>192.0.2.10</code> becomes <code>10.2.0.192.in-addr.arpa</code>).</li>
+                        <li><em>IPv6:</em> Hexadecimal nibbles are reversed under <code>ip6.arpa</code>.</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>A reverse lookup can be executed via <code>dig -x 192.0.2.10</code>. Forward and reverse lookups are managed separately, as reverse zones are usually controlled by network providers (ISPs) holding IP allocations rather than domain owners.</p>
+
+            <h4>1.1.4. Authoritative answer and non-authoritative answer explanation</h4>
+            <ul>
+                <li><strong>Authoritative Answer:</strong> Issued directly by a name server that hosts the original, master copy of the zone. The response header has the <code>AA</code> (Authoritative Answer) flag set.</li>
+                <li><strong>Non-authoritative Answer:</strong> Provided by a server (like a recursive resolver) that retrieved the record previously and served it from its local cache. While fast, it may be stale if the authoritative zone was recently modified before the record's TTL expired.</li>
+            </ul>
+            <p>Direct queries targeting zone primary servers (e.g., <code>dig @ns1.example.org example.org SOA</code>) return authoritative answers, whereas public resolvers (e.g., <code>8.8.8.8</code>) usually provide non-authoritative responses.</p>
+
+            <h4>1.1.5. DNS resolver, DNS cache, file: /etc/hosts</h4>
+            <p><strong>DNS Resolvers</strong></p>
+            <ul>
+                <li><strong>Stub Resolver:</strong> A lightweight software module integrated into the OS. It cannot traverse the hierarchy on its own; instead, it forwards queries to an upstream recursive resolver configured manually or via DHCP/VPN.</li>
+                <li><strong>Recursive Resolver:</strong> A dedicated server (operated by ISPs or public providers) that handles full iterative traversal of the DNS tree and manages response caching.</li>
+            </ul>
+
+            <p><strong>DNS Caching</strong><br>
+            Stores recent queries temporarily within application memory, OS caches, routers, or resolvers to minimize network traffic and lower latency.</p>
+            <ul>
+                <li><strong>Positive Caching:</strong> Caches valid IP mappings.</li>
+                <li><strong>Negative Caching:</strong> Caches missing record responses (<code>NXDOMAIN</code>).</li>
+                <li>Record updates do not instantly propagate globally; legacy records persist until their cached TTL expires.</li>
+            </ul>
+
+            <p><strong>The <code>/etc/hosts</code> File</strong><br>
+            A static text configuration file used for local IP-to-hostname resolution (located at <code>C:\Windows\System32\drivers\etc\hosts</code> on Windows).<br>
+            <em>Format:</em></p>
+            <pre style="background: #1e1e1e; padding: 10px; border-radius: 5px;"><code>192.168.1.20 server.local</code></pre>
+            <p>By default (governed by <code>/etc/nsswitch.conf</code> in Linux), system resolvers evaluate the <code>hosts</code> file prior to issuing network DNS queries.</p>
+
+            <p><strong>Resolution Order on Client Devices:</strong></p>
+            <ol>
+                <li>Local <code>/etc/hosts</code> file</li>
+                <li>OS / Local DNS cache</li>
+                <li>Configured Recursive Resolver</li>
+                <li>External DNS Hierarchy (Root &rarr; TLD &rarr; Authoritative Server)</li>
+            </ol>
+        </div>
+
+        <!-- 1.2 MAIL SYSTEM -->
+        <div id="mail" class="mail">
+            <h3>1.2. Mail system</h3>
+
+            <h4>1.2.1. Protocols POP3, IMAP, SMTP, client-server communication, basic commands</h4>
+            <p>Electronic mail transport relies on specialized client-server protocols designed for sending and retrieving messages.</p>
+
+            <p><strong>SMTP (Simple Mail Transfer Protocol)</strong><br>
+            Used exclusively for outbound message transmission from clients to mail servers and for server-to-server relaying over TCP connections.</p>
+            <ul>
+                <li><strong>Ports:</strong>
+                    <ul>
+                        <li><code>25</code>: Inter-server relay</li>
+                        <li><code>587</code>: Client submission (typically via STARTTLS)</li>
+                        <li><code>465</code>: Implicit TLS-encrypted SMTP</li>
+                    </ul>
+                </li>
+                <li><strong>Core Commands:</strong> <code>EHLO</code>/<code>HELO</code>, <code>MAIL FROM</code>, <code>RCPT TO</code>, <code>DATA</code>, <code>RSET</code>, <code>NOOP</code>, <code>QUIT</code></li>
+            </ul>
+
+            <p><em>SMTP Dialogue Example:</em></p>
+            <pre style="background: #1e1e1e; padding: 10px; border-radius: 5px;"><code>Client: EHLO example.com
+Server: 250-Hello example.com
+Client: MAIL FROM:&lt;alice@example.com&gt;
+Server: 250 OK
+Client: RCPT TO:&lt;bob@example.com&gt;
+Server: 250 OK
+Client: DATA
+Server: 354 End data with &lt;CR&gt;&lt;LF&gt;.&lt;CR&gt;&lt;LF&gt;
+Client: Subject: Hello
+Client: Hello Bob!
+Client: .
+Server: 250 Message accepted for delivery
+Client: QUIT</code></pre>
+
+            <p><strong>POP3 (Post Office Protocol v3)</strong><br>
+            Designed to download messages from a server mailbox to a single local device.</p>
+            <ul>
+                <li>By default, fetched emails are removed from the server (though clients can keep local copies).</li>
+                <li>Lacks support for complex server-side folder synchronization.</li>
+                <li><strong>Ports:</strong> <code>110</code> (Plain/STARTTLS), <code>995</code> (Implicit SSL/TLS)</li>
+                <li><strong>Core Commands:</strong> <code>USER</code>, <code>PASS</code>, <code>STAT</code>, <code>LIST</code>, <code>RETR</code>, <code>DELE</code>, <code>NOOP</code>, <code>QUIT</code></li>
+            </ul>
+
+            <p><strong>IMAP (Internet Message Access Protocol)</strong><br>
+            Enables real-time management and synchronization of emails directly on the remote server.</p>
+            <ul>
+                <li>Stores emails remotely, allowing multiple devices to synchronize state (read/unread status, flags, folders).</li>
+                <li>Supports partial downloads (e.g., retrieving headers without large attachments).</li>
+                <li><strong>Ports:</strong> <code>143</code> (Plain/STARTTLS), <code>993</code> (Implicit SSL/TLS)</li>
+                <li><strong>Core Commands:</strong> <code>LOGIN</code>, <code>SELECT</code>, <code>FETCH</code>, <code>SEARCH</code>, <code>STORE</code>, <code>COPY</code>, <code>EXPUNGE</code>, <code>LOGOUT</code></li>
+            </ul>
+
+            <p><strong>Client-Server Email Flow:</strong></p>
+            <ol>
+                <li>Author creates a message in a Mail User Agent (MUA, e.g., Outlook).</li>
+                <li>MUA transfers the email to its outgoing Mail Transfer Agent (MTA) via SMTP.</li>
+                <li>Outbound MTA queries DNS for the recipient domain's <code>MX</code> record.</li>
+                <li>Outbound MTA relays the message to the destination MTA using SMTP.</li>
+                <li>Destination MTA deposits the message into the target user mailbox (MDA).</li>
+                <li>Recipient fetches or reads the message via IMAP or POP3.</li>
+            </ol>
+
+            <h4>1.2.2. NNTP protocol</h4>
+            <p><strong>NNTP (Network News Transfer Protocol)</strong> is designed for reading, posting, and distributing articles across Usenet newsgroups.</p>
+            <ul>
+                <li>Supports public/shared discussion structures organized into hierarchical newsgroups.</li>
+                <li>Handles article propagation between peering news servers.</li>
+                <li><strong>Ports:</strong> <code>119</code> (Standard), <code>563</code> (NNTPS - encrypted)</li>
+                <li><strong>Core Commands:</strong> <code>ARTICLE</code>, <code>GROUP</code>, <code>LIST</code>, <code>HEAD</code>, <code>BODY</code>, <code>POST</code>, <code>NEXT</code>, <code>QUIT</code></li>
+            </ul>
+            <p>Unlike email (primarily private, point-to-point communication), NNTP operates as a broadcast-oriented, public discussion ecosystem.</p>
+
+            <h4>1.2.3. E-mail mailbox, parameters, aliases, address</h4>
+            <ul>
+                <li><strong>Mailbox:</strong> A storage location on a mail server designated for a user account. Standard system folders include <em>Inbox</em>, <em>Sent</em>, <em>Drafts</em>, <em>Spam/Junk</em>, and <em>Trash</em>.</li>
+                <li><strong>Account Parameters:</strong> Required settings for client configuration:
+                    <ul>
+                        <li>Email Address, Username, and Password.</li>
+                        <li>Incoming Server Settings (IMAP/POP3 host, port, security type).</li>
+                        <li>Outgoing Server Settings (SMTP host, port, security type).</li>
+                    </ul>
+                </li>
+                <li><strong>Alias:</strong> A secondary email address that forwards incoming messages directly to a primary mailbox. Aliases do not require separate mailboxes or distinct passwords, allowing users to separate personal and business channels while keeping their primary address private.</li>
+                <li><strong>Address Structure:</strong> Formatted as <code>local-part@domain.tld</code> (e.g., <code>user@example.com</code>), where the local part identifies the mailbox and the domain identifies the target service.</li>
+            </ul>
+
+            <h4>1.2.4. E-mail structure: header, separator</h4>
+            <p>An RFC 5322 email message comprises two distinct sections:</p>
+            <ol>
+                <li><strong>Header:</strong> Metadata containing routing, origin, and formatting details. Key fields include <code>From</code>, <code>To</code>, <code>Cc</code>, <code>Bcc</code>, <code>Subject</code>, <code>Date</code>, <code>Reply-To</code>, <code>Message-ID</code>, <code>Received</code> (server hop history), <code>MIME-Version</code>, and <code>Content-Type</code>.</li>
+                <li><strong>Body:</strong> The actual text, HTML markup, or attachment data.</li>
+            </ol>
+            <p>The header and body are separated by an explicit <strong>empty line</strong> (represented by two consecutive <code>CRLF</code> sequences).</p>
+
+            <h4>1.2.5. Attachments, e-mail coding, MIME</h4>
+            <ul>
+                <li><strong>Attachments:</strong> Supplementary files (e.g., images, PDFs, archives) transmitted within the email structure.</li>
+                <li><strong>Encoding Formats:</strong> Standard SMTP handles only 7-bit ASCII text. Binary data and extended characters must be converted into safe ASCII representations:
+                    <ul>
+                        <li><strong>Base64:</strong> Converts binary data streams into 6-bit ASCII sequences (ideal for attachments).</li>
+                        <li><strong>Quoted-Printable:</strong> Encodes non-ASCII characters while leaving standard text legible.</li>
+                    </ul>
+                </li>
+                <li><strong>MIME (Multipurpose Internet Mail Extensions):</strong> Extends standard email capabilities to support multipart contents, rich HTML, custom character sets, and attachments.
+                    <ul>
+                        <li><em>Key Headers:</em> <code>MIME-Version</code>, <code>Content-Type</code>, <code>Content-Transfer-Encoding</code>, <code>Content-Disposition</code>.</li>
+                        <li><em>Multipart MIME:</em> Allows a single email to include multiple body sections (e.g., rendering both a plain text alternative and an HTML version).</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h4>1.2.6. Mailing lists, e-mail gate</h4>
+            <ul>
+                <li><strong>Mailing Lists:</strong> Automated distribution systems where a single email sent to a central address is broadcast to multiple subscribers. Types include <em>Announcement lists</em> (one-way), <em>Discussion lists</em> (open participation), and <em>Moderated lists</em> (submission approval required).</li>
+                <li><strong>Email Gateway:</strong> A bridge connecting distinct messaging networks or converting protocol payloads. It handles tasks such as format translation, spam/antivirus inspection, enforcement of organizational security rules, and interconnecting email systems with external chat or paging channels.</li>
+            </ul>
+
+            <h4>1.2.7. E-mail security, SSL, TLS, PGP, signature</h4>
+            <ul>
+                <li><strong>SSL / TLS:</strong> Transport-layer encryption protocols that protect connection channels between MUAs and MTAs (SSL is deprecated; TLS is the modern standard).</li>
+                <li><strong>PGP (Pretty Good Privacy):</strong> An end-to-end encryption and signing standard utilizing asymmetric (public key) cryptography.
+                    <ul>
+                        <li><em>Encryption Flow:</em> Sender encrypts the message using the recipient's public key; recipient decrypts it using their matching private key.</li>
+                    </ul>
+                </li>
+                <li><strong>Digital Signatures:</strong> Provide authenticity and non-repudiation. The sender hashes the message body and encrypts the hash with their private key; the recipient verifies the signature using the sender's public key.</li>
+            </ul>
+
+            <h4>1.2.8. Spam, blacklists, graylists, spam filtering</h4>
+            <ul>
+                <li><strong>Spam:</strong> Unsolicited bulk emails.</li>
+                <li><strong>Blacklists (RBL / DNSBL):</strong> Real-time databases listing known spam-sending IP addresses or domain reputations.</li>
+                <li><strong>Greylisting:</strong> An anti-spam technique that temporarily declines initial connection attempts from unknown senders (<code>4xx</code> temporary failure). Legitimate servers automatically retry delivery later, whereas simple spam bots typically abandon the attempt.</li>
+                <li><strong>Spam Filtering Mechanisms:</strong> Multi-layered defense combining blacklisting, greylisting, keyword analysis, Bayesian scoring, sender reputation checks, antivirus scanners, and cryptographic verification frameworks (<strong>SPF</strong>, <strong>DKIM</strong>, and <strong>DMARC</strong>).</li>
+            </ul>
+        </div>
+    </div>
+    
     <p class="practical">Content for Practical part</p>
     <p class="dns">Content for DNS system</p>
 <!-- Task 2.1: DNS system -->
