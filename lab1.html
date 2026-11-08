@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="lab1.css">
+    <title>Assignment 1</title>
+</head>
+<body style="background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px;">
+    <h1>Laboratory Assignment 1</h1>
+    <ul>
+        <li><a href="#theoretical">Theory</a></li>
+        <li><a href="#practical">Practical</a></li>
+        <li><a href="#dns">DNS system</a></li>
+        <li><a class="#mail">Mail system</a></li>
+        <li><a href="index.html">Back to main page</a></li>
+    </ul>
+    <p class="theoretical">Content for Theoretical part</p>
+    <p class="practical">Content for Practical part</p>
+    <p class="dns">Content for DNS system</p>
+<!-- Task 2.1: DNS system -->
+<div class="lab-card">
+    <span class="task-badge">Task 2.1</span>
+    <h2>DNS System Analysis</h2>
+    
+    <p>In this task, DNS settings, tool outputs (dig, host, nslookup), and host file configurations were analyzed.</p>
+
+    <div class="image-gallery">
+        <!-- 2.1.1 -->
+        2.1.1. Display DNS settings on our computer using Control Panel and ipconfig. Find the Google DNS server and change DNS settings on your computer to use this server.
+        <img src="source_files/Assigment_1/2_1_1.png" alt="DNS Settings ipconfig" class="result-image">
+
+        <!-- 2.1.2.1 -->
+        2.1.2.1. Domain names and corresponding IP addresses of computers in the lodz.pl domain.
+        <img src="source_files/Assigment_1/2_1_2_1.png" alt="Domain names lodz.pl" class="result-image">
+
+        <!-- 2.1.2.2 -->
+        2.1.2.2. A computer somewhere in Europe (Switzerland) and find all available information about the DNS settings of this computer.
+        <img src="source_files/Assigment_1/2_1_2_2.png" alt="European computer DNS" class="result-image">
+
+        <!-- 2.1.2.3 -->
+        2.1.2.3. A computer somewhere outside Europe (United Kingdom) and find all available information about the DNS settings of this computer.
+        <img src="source_files/Assigment_1/2_1_2_3.png" alt="Outside Europe computer DNS" class="result-image">
+
+        <!-- 2.1.2.4 -->
+        2.1.2.4. Verify DNS assignment for localhost.
+        <img src="source_files/Assigment_1/2_1_2_4.png" alt="Localhost DNS assignment" class="result-image">
+
+        <!-- 2.1.2.5 -->
+        2.1.2.5. Flush the DNS memory on our computer using ipconfig.
+        <img src="source_files/Assigment_1/2_1_2_5.png" alt="Flush DNS ipconfig" class="result-image">
+
+        <!-- 2.1.2.6 -->
+        2.1.2.6. Change the hosts file such that when we enter ife42.com, the website msn.com will display (since MSN uses Azure Front Door, we used ping in terminal to prove it works).
+        <img src="source_files/Assigment_1/2_1_2_6.png" alt="Hosts file modification" class="result-image">
+    </div>
+</div>
+
+    <p class="mail">Content for Mail system</p>
+    <!-- Task 2.2 -->
+<div class="lab-card">
+    <h1><span class="task-badge">Task 2.2.2</span></h1>
+    
+    <p>In this task, intentional errors were made during the email creation process to analyze the server's bounce-back messages and rejection handling in the Thunderbird mail client.</p>
+
+    <div class="image-gallery">
+        <!-- Podmień nazwy plików na swoje zrzuty z Thunderbirda -->
+        2.2.2.1. A non-existent mail server.
+        <img src="source_files/Assigment_1/error2.2.2.1.png" alt="Delivery Error 1" class="result-image">
+        2.2.2.2. A non-existent user on an existent e-mail server.
+        <img src="source_files/Assigment_1/error2.2.2.2.png" alt="Delivery Error 2" class="result-image">
+        2.2.2.3. A server which is not an e-mail server
+        <img src="source_files/Assigment_1/error2.2.2.3.png" alt="Delivery Error 3" class="result-image">
+    </div>
+</div>
+
+<!-- Zadanie 2.2.3 -->
+<div class="lab-card">
+    <h1><span class="task-badge">Task 2.2.3</span></h1>
+    <h2>Network Traffic Analysis (Wireshark)</h2>
+    
+    <p>Using Wireshark, the network interface was monitored to analyze the process of sending and receiving e-mails via Thunderbird. Based on the packet capture, the following protocol stack was identified for the e-mail communication process.</p>
+
+     <div class="image-gallery">
+        <img src="source_files/Assigment_1/WireShark-smtp.png" alt="Wireshark SMTP Capture" class="result-image">
+    </div>
+    <h3 style="color: #ffffff; margin-top: 25px; font-size: 1.2rem;">Protocols Identified for Sending E-mails</h3>
+    <ul style="line-height: 1.6;">
+        <li><strong>Application Layer (SMTP):</strong> Simple Mail Transfer Protocol (SMTP) is the primary protocol used by Thunderbird to initiate the transfer to the <code>studife.cti.p.lodz.pl</code> Postfix server.</li>
+        <li><strong>Transport Layer (TCP):</strong> Transmission Control Protocol (TCP) ensures reliable delivery. The capture shows the connection utilizing TCP port 587, the standard port for SMTP message submission.</li>
+        <li><strong>Network Layer (IPv4):</strong> Internet Protocol Version 4 routes the packets between the client's local IP address and the destination server's IP.</li>
+        <li><strong>Data Link Layer (Ethernet II):</strong> Handles the physical MAC addressing and framing on the local network segment.</li>
+        <li><strong>Security Protocol (TLS):</strong> The capture shows the client issuing the <code>STARTTLS</code> command, upgrading the initial plain text connection to an encrypted TLS connection.</li>
+    </ul>
+
+    <h3 style="color: #ffffff; margin-top: 25px; font-size: 1.2rem;">Protocols Identified for Receiving E-mails</h3>
+    <ul style="line-height: 1.6;">
+        <li><strong>Application Layer (IMAP):</strong> Internet Message Access Protocol (IMAP) is the standard protocol used by Thunderbird to synchronize and read mail directly from the server.</li>
+        <li><strong>Security Protocol (TLS):</strong> Similar to sending, receiving traffic is heavily encrypted, typically utilizing IMAP over TLS (IMAPS) on TCP port 993 to secure the downloaded messages.</li>
+    </ul>
+
+   
+</div>
+<!-- Zadanie 2.2.4 -->
+<div class="lab-card">
+    <h1><span class="task-badge">Task 2.2.4</span></h1>
+    <h2>Manual SMTP Transaction via Telnet</h2>
+    
+    <p>To bypass the ISP port 25 block on my home network, I established an SSH tunnel to the university server and executed the local telnet command from within the server environment. The screenshots below document the SSH login, the successful manual SMTP transaction, and the final receipt of the message in the Thunderbird client.</p>
+  
+    <div class="image-gallery">
+        <img src="source_files/Assigment_1/2.2.2.4_1.png" alt="SSH Tunnel Connection" class="result-image">
+        <img src="source_files/Assigment_1/2.2.2.4_2.png" alt="Manual SMTP via Telnet" class="result-image">
+        <img src="source_files/Assigment_1/2.2.2.4_3.png" alt="Message Received in Thunderbird Inbox" class="result-image">
+        <img src="source_files/Assigment_1/2.2.2.4_4.png" alt="Opened Test Message" class="result-image">
+    </div>
+</div>
+    <a href="index.html" style="color: #ff66cc;">&larr; Back to main page</a>
+</body>
+</html>

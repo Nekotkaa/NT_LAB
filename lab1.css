@@ -1,0 +1,76 @@
+p {
+    text-align: center;
+}
+
+h1 {
+    text-align: center;
+}
+
+
+
+.theoretical {
+text-align: left;
+}
+
+.practical {
+text-align: left;
+
+}
+
+.dns {
+text-align: left;
+
+}
+
+.mail {
+text-align: left;
+}
+
+ul {
+    margin-bottom: 10px;
+    margin-left: 25%;
+    font-size: 18px;
+
+}
+
+a:link {
+  color: #ff66cc;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #ff66cc;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+a:hover {
+  color: rgb(85, 18, 103);
+  background-color: transparent;
+  text-decoration: underline;
+}
+
+/* Styling for single images */
+.result-image {
+    max-width: 65%; /* Reduces single image size (change percentage to your liking) */
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid #333333;
+    margin: 20px auto; /* 'auto' automatically centers the image */
+    display: block;
+}
+
+/* Layout for multiple images in one task */
+.image-gallery {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers all images inside the gallery */
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.image-gallery .result-image {
+    margin: 0; 
+    width: 65%; /* Reduces gallery image size (change percentage to your liking) */
+}
