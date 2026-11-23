@@ -2,11 +2,153 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Laboratory 2</title>
+    <link rel="stylesheet" href="lab1.css">
+    <title>Assignment 2</title>
 </head>
 <body style="background-color: #121212; color: #e0e0e0; font-family: Arial, sans-serif; padding: 20px;">
-    <h1>Laboratory Assignment 2</h1>
-    <p>Content for lab 2 goes here.</p>
-    <a href="index.html" style="color: #ff66cc;">&larr; Back to main page</a>
+
+    <h1>Laboratory Assignment 2 - Network and Transport Layers</h1>
+    <ul>
+        <li><a href="#theoretical">1. Theoretical part</a></li>
+        <li><a href="#practical">2. Practical part</a></li>
+        <li><a href="index.html">Back to main page</a></li>
+    </ul>
+
+    <!-- 1. THEORETICAL PART -->
+    <div id="theoretical" class="theoretical">
+        <h2>1. Theoretical part</h2>
+
+        <h3>1.1. Transport Layer Concepts (TCP, UDP, and Ports)</h3>
+
+        <h4>TCP Protocol (Transmission Control Protocol)</h4>
+        <ul>
+            <li>TCP operates as a stateful, connection-oriented protocol at the transport layer.</li>
+            <li>It ensures that transmitted data reaches the destination intact, in sequential order, and free of duplicates.</li>
+            <li>Reliability is achieved via sequence numbering, acknowledgments (ACKs), retransmission of missing segments, sliding-window flow control, and congestion control mechanisms.</li>
+            <li>It is chosen for applications prioritizing data integrity over minimal delay, such as HTTP/HTTPS, SSH, FTP, and SMTP.</li>
+        </ul>
+
+        <h4>UDP Protocol (User Datagram Protocol)</h4>
+        <ul>
+            <li>UDP is a stateless, connectionless, best-effort transport-layer protocol.</li>
+            <li>It transmits standalone messages called datagrams without prior connection setup or guarantees regarding delivery, ordering, or duplicate removal.</li>
+            <li>By avoiding handshakes, retransmission logic, and heavy session state, UDP keeps latency low and header overhead minimal.</li>
+            <li>It is widely used for time-sensitive or request-response traffic, including DNS, VoIP, multiplayer games, and live streaming.</li>
+        </ul>
+
+        <h4>TCP Protocol Parameters (Header Fields)</h4>
+        <p>A standard TCP segment header (typically 20 bytes without options) contains the following fields:</p>
+        <ul>
+            <li><strong>Source Port &amp; Destination Port (16 bits each):</strong> Identify the origin and target application processes on each host.</li>
+            <li><strong>Sequence Number (32 bits):</strong> Marks the byte-stream offset of the first payload byte in the segment (or the initial sequence number when SYN is set).</li>
+            <li><strong>Acknowledgment Number (32 bits):</strong> When the ACK flag is active, indicates the next sequence number expected by the sender.</li>
+            <li><strong>Data Offset / Header Length (4 bits):</strong> Specifies the header length in 32-bit words, showing where user payload data starts.</li>
+            <li><strong>Control Flags (e.g., SYN, ACK, FIN, RST, PSH, URG):</strong> Manage connection establishment, keepalive/maintenance, data flushing, resets, and termination.</li>
+            <li><strong>Window Size (16 bits):</strong> Announces how many bytes the receiver can currently buffer (flow control).</li>
+            <li><strong>Checksum (16 bits):</strong> Provides error checking over the TCP header, payload, and IP pseudo-header.</li>
+            <li><strong>Urgent Pointer (16 bits):</strong> Points to priority/urgent bytes when the URG flag is enabled.</li>
+        </ul>
+
+        <h4>UDP Protocol Parameters (Header Fields)</h4>
+        <p>A UDP header has a fixed size of 8 bytes and consists of four fields:</p>
+        <ul>
+            <li><strong>Source Port (16 bits):</strong> Identifies the sender's port (optional; may be set to 0 when unused or not required for replies).</li>
+            <li><strong>Destination Port (16 bits):</strong> Identifies the target port on the destination host.</li>
+            <li><strong>Length (16 bits):</strong> Defines the combined byte length of the UDP header and payload (at least 8 bytes).</li>
+            <li><strong>Checksum (16 bits):</strong> Verifies integrity across the UDP header, payload, and IP pseudo-header (optional in IPv4, mandatory in IPv6).</li>
+        </ul>
+
+        <h4>TCP Connection</h4>
+        <ul>
+            <li>A TCP connection represents a logical, full-duplex communication session between two sockets (<code>Source IP : Source Port</code> and <code>Destination IP : Destination Port</code>).</li>
+            <li>Both peers track session parameters—such as sequence numbers, receive windows, and timers—until the session is closed or aborted.</li>
+        </ul>
+
+        <h4>Three-Way Handshake &amp; Connection Establishment</h4>
+        <p>TCP establishes a session using a three-step handshake to synchronize sequence numbers and verify bidirectional reachability:</p>
+        <ol>
+            <li><strong>SYN:</strong> The client transmits a segment with the <code>SYN</code> flag set and an Initial Sequence Number (x).</li>
+            <li><strong>SYN-ACK:</strong> The server responds with <code>SYN</code> and <code>ACK</code> set, carrying its own Initial Sequence Number (y) and acknowledging x + 1.</li>
+            <li><strong>ACK:</strong> The client returns an <code>ACK</code> with acknowledgment number y + 1 (optionally carrying initial data). Once received by the server, the connection reaches the <code>ESTABLISHED</code> state.</li>
+        </ol>
+
+        <h4>Connection Release (Teardown)</h4>
+        <p>Because TCP is full-duplex, each direction can close independently, typically via a four-way exchange (sometimes appearing as three packets when <code>FIN+ACK</code> or piggybacked ACKs occur):</p>
+        <ol>
+            <li>One endpoint (e.g., the client) finishes sending data and transmits a segment with the <code>FIN</code> flag set.</li>
+            <li>The peer (e.g., the server) acknowledges the <code>FIN</code> with an <code>ACK</code> (closing the client-to-server direction while allowing server-to-client data to continue).</li>
+            <li>Once the server has no remaining data to send, it transmits its own <code>FIN</code> segment.</li>
+            <li>The client sends a final <code>ACK</code>, enters the <code>TIME_WAIT</code> state (allowing lingering packets from the previous session to clear), and then transitions to closed. (Alternatively, a connection can be reset immediately using an <code>RST</code> segment.)</li>
+        </ol>
+
+        <h4>Ports</h4>
+        <ul>
+            <li>Ports are 16-bit unsigned integers (<code>0</code>–<code>65535</code>) used by TCP and UDP to multiplex and demultiplex traffic so packets reach the proper service on a host.</li>
+            <li>Standard port ranges:
+                <ul>
+                    <li><strong>Well-Known Ports (0–1023):</strong> Reserved for core system and standard network services (e.g., <code>22</code> SSH, <code>25</code> SMTP, <code>53</code> DNS, <code>80</code> HTTP, <code>443</code> HTTPS).</li>
+                    <li><strong>Registered Ports (1024–49151):</strong> Assigned to specific applications or vendor-defined services.</li>
+                    <li><strong>Dynamic / Ephemeral Ports (49152–65535):</strong> Allocated temporarily by client operating systems when initiating outbound connections.</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <hr>
+
+    <!-- 2. PRACTICAL PART -->
+    <div id="practical" class="practical">
+        <h2>2. Practical part</h2>
+
+        <!-- 2.1.1 -->
+        <div>
+            <h3>2.1.1</h3>
+            <p>2.1.1. Enter the www.google.com webpage using your preferred browser. Use netstat and Wireshark to identify ports which are used for data transmission (local and remote port numbers). Finish the connection (close the browser) and check the local port status.</p>
+            <div>
+                <img src="source_files/Assigment_2/1.png" class="result-image">
+                <img src="source_files/Assigment_2/2.png" class="result-image">
+                <img src="source_files/Assigment_2/3.png" class="result-image">
+                <img src="source_files/Assigment_2/4.png" class="result-image">
+                <img src="source_files/Assigment_2/5.png" class="result-image">
+                <img src="source_files/Assigment_2/6.png" class="result-image">
+            </div>
+        </div>
+
+        <!-- 2.1.2 -->
+        <div>
+            <h3>2.1.2</h3>
+            <p>2.1.2. Copy a file from your local host to the studife.it.p.lodz.pl server using the FTP protocol. Use netstat and Wireshark to identify ports which are used for data transmission (local and remote port numbers). Finish the connection and check the local port status.</p>
+            <div>
+                <img src="source_files/Assigment_2/9.png" class="result-image">
+                <img src="source_files/Assigment_2/10.png" class="result-image">
+            </div>
+        </div>
+
+        <!-- 2.1.3 -->
+        <div>
+            <h3>2.1.3</h3>
+            <p>2.1.3. Copy a file from your local host to the studife.it.p.lodz.pl server using the SCP or SFTP protocol. Use netstat and Wireshark to identify ports which are used for data transmission (local and remote port numbers). Finish the connection and check the local port status.</p>
+            <div>
+                <img src="source_files/Assigment_2/11.png" class="result-image">
+                <img src="source_files/Assigment_2/12.png" class="result-image">
+                <img src="source_files/Assigment_2/13.png" class="result-image">
+                <img src="source_files/Assigment_2/14.png" class="result-image">
+                <img src="source_files/Assigment_2/15.png" class="result-image">
+            </div>
+        </div>
+
+        <!-- 2.1.4 -->
+        <div>
+            <h3>2.1.4</h3>
+            <p>2.1.4. Use Wireshark to check which protocol and port are used in the transport layer by the DNS protocol.</p>
+            <div>
+                <img src="source_files/Assigment_2/7.png" class="result-image">
+                <img src="source_files/Assigment_2/8.png" class="result-image">
+            </div>
+        </div>
+    </div>
+
+    <p><a href="index.html" style="color: #ff66cc;">&larr; Back to main page</a></p>
+
 </body>
 </html>
